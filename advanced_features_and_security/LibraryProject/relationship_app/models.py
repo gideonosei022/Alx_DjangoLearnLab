@@ -1,7 +1,63 @@
-# Create your models here.
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.conf import settings
+
+# -------------------------------
+# Custom User Manager
+# -------------------------------
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, email=None, password=None, **extra_fields):
+        if not username:
+            raise ValueError("Username must be set")
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        if not extra_fields.get("is_staff"):
+            raise ValueError("Superuser must have is_staff=True.")
+        if not extra_fields.get("is_superuser"):
+            raise ValueError("Superuser must have is_superuser=True.")
+
+        return self.create_user(username, email, password, **extra_fields)
 
 
+# -------------------------------
+# Custom User Model
+# -------------------------------
+class CustomUser(AbstractUser):
+    date_of_birth = models.DateField(null=True, blank=True)
+    profile_photo = models.ImageField(upload_to="profile_photos/", null=True, blank=True)
+
+    # Fix reverse accessor clash with auth.User
+    groups = models.ManyToManyField(
+        "auth.Group",
+        related_name="customuser_set",
+        blank=True,
+        help_text="Groups this user belongs to."
+    )
+    user_permissions = models.ManyToManyField(
+        "auth.Permission",
+        related_name="customuser_set",
+        blank=True,
+        help_text="Permissions for this user."
+    )
+
+    objects = CustomUserManager()
+
+    def __str__(self):
+        return self.username
+
+
+# -------------------------------
+# Library Models
+# -------------------------------
 class Author(models.Model):
     name = models.CharField(max_length=255)
 
@@ -26,10 +82,7 @@ class Book(models.Model):
 
 class Library(models.Model):
     name = models.CharField(max_length=255)
-    books = models.ManyToManyField(
-        Book,
-        related_name="libraries"
-    )
+    books = models.ManyToManyField(Book, related_name="libraries")
 
     def __str__(self):
         return self.name
@@ -37,20 +90,15 @@ class Library(models.Model):
 
 class Librarian(models.Model):
     name = models.CharField(max_length=255)
-    library = models.OneToOneField(
-        Library,
-        on_delete=models.CASCADE,
-        related_name="librarian"
-    )
+    library = models.OneToOneField(Library, on_delete=models.CASCADE, related_name="librarian")
 
     def __str__(self):
         return self.name
 
-from django.db import models
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
+# -------------------------------
+# User Profile Model
+# -------------------------------
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('Admin', 'Admin'),
@@ -58,57 +106,8 @@ class UserProfile(models.Model):
         ('Member', 'Member'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
-
-
-    
-from django.contrib.auth.models import AbstractUser,BaseUserManager
-from django.db import models
-
-
-class CustomUser(AbstractUser):
-    date_of_birth = models.DateField(null=True, blank=True)
-    profile_photo = models.ImageField(
-        upload_to="profile_photos/",
-        null=True,
-        blank=True
-    )
-
-    def __str__(self):
-        return self.username
-    
-class CustomUserManager(BaseUserManager):
-    def create_user(self, username, email=None, password=None, **extra_fields):
-        if not username:
-            raise ValueError("The Username must be set")
-
-        email = self.normalize_email(email)
-        user = self.model(
-            username=username,
-            email=email,
-            **extra_fields
-        )
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, username, email=None, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_active", True)
-
-        if not extra_fields.get("is_staff"):
-            raise ValueError("Superuser must have is_staff=True.")
-        if not extra_fields.get("is_superuser"):
-            raise ValueError("Superuser must have is_superuser=True.")
-
-        return self.create_user(username, email, password, **extra_fields)
-
-
-
-    
-
