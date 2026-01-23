@@ -2,14 +2,11 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser
 
-# -------------------------------
 # Custom User Admin
-# -------------------------------
-@admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
 
-    # Add custom fields to UserAdmin
+    # Add extra fields
     fieldsets = UserAdmin.fieldsets + (
         ("Additional Info", {
             "fields": ("date_of_birth", "profile_photo"),
@@ -23,5 +20,9 @@ class CustomUserAdmin(UserAdmin):
     )
 
     list_display = ("username", "email", "is_staff", "is_active")
+
+# Explicit registration
+admin.site.register(CustomUser, CustomUserAdmin)
+
 
 
