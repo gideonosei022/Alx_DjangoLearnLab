@@ -56,3 +56,32 @@ def delete_book(request, book_id):
         book.delete()
         return redirect("book_list")
     return render(request, "bookshelf/delete_book.html", {"book": book})
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import permission_required
+from .models import Book
+from .forms import ExampleForm
+
+
+def book_list(request):
+    """
+    Secure view that lists books using Django ORM
+    (prevents SQL injection).
+    """
+    books = Book.objects.all()
+    return render(request, "bookshelf/book_list.html", {"books": books})
+
+
+@permission_required("bookshelf.can_create", raise_exception=True)
+def create_book(request):
+    """
+    View protected by permissions and CSRF token.
+    """
+    if request.method == "POST":
+        form = ExampleForm(request.POST)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ExampleForm()
+
+    return render(request, "bookshelf/form_example.html", {"form": form})
