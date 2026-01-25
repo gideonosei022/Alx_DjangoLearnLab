@@ -153,3 +153,15 @@ X_FRAME_OPTIONS = 'DENY'
 # Cookie security (HTTPS only)
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+
+# ============================
+# HTTPS & Security Settings
+# ============================
+
+# Redirect all HTTP requests to HTTPS
+SECURE_SSL_REDIRECT = True
+
+# HTTP Strict Transport Security (HSTS)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
