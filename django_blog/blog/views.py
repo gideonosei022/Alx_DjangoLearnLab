@@ -101,7 +101,7 @@ def add_comment(request, pk):
 
     return redirect('post-detail', pk=pk)
 
-class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class CommentCreationView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Comment
     form_class = CommentForm
     template_name = 'blog/comment_form.html'
