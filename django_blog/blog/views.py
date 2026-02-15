@@ -13,6 +13,7 @@ from django.shortcuts import redirect
 from .models import Comment, Post
 from .forms import CommentForm, PostForm
 
+
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
@@ -175,20 +176,24 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse_lazy('post-detail', kwargs={'pk': self.kwargs['pk']})
+    
 
-class TagPostListView(ListView):
+
+class PostByTagListView(ListView):
     model = Post
     template_name = 'blog/tag_posts.html'
     context_object_name = 'posts'
 
     def get_queryset(self):
-        tag_name = self.kwargs['tag_name']
-        return Post.objects.filter(tags__name=tag_name)
+        return Post.objects.filter(
+            tags__slug=self.kwargs['tag_slug']
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tag_name'] = self.kwargs['tag_name']
+        context['tag_slug'] = self.kwargs['tag_slug']
         return context
+
 class SearchResultsView(ListView):
     model = Post
     template_name = 'blog/search_results.html'
