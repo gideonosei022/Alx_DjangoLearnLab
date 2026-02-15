@@ -6,17 +6,45 @@
     <link rel="stylesheet" href="{% static 'blog/css/style.css' %}">
 </head>
 <body>
+
 <div class="container">
-    <h2>All Posts</h2>
+
+    <h2>All Blog Posts</h2>
+
+    <!-- 🔍 SEARCH FORM -->
+    <form method="GET" action="{% url 'search-results' %}">
+        <input type="text" name="q" placeholder="Search posts...">
+        <button type="submit">Search</button>
+    </form>
+
+    <hr>
+
     {% for post in posts %}
-        <div>
-            <h3><a href="{% url 'post-detail' post.pk %}">{{ post.title }}</a></h3>
-            <p>By {{ post.author.username }} | {{ post.published_date }}</p>
+        <div class="post">
+
+            <h3>
+                <a href="{% url 'post-detail' post.pk %}">
+                    {{ post.title }}
+                </a>
+            </h3>
+
+            <p>
+                By {{ post.author.username }} |
+                {{ post.published_date }}
+            </p>
+
+            <p>{{ post.content|truncatewords:20 }}</p>
+
         </div>
+
+        <hr>
+
     {% empty %}
-        <p>No posts yet.</p>
+        <p>No posts available.</p>
     {% endfor %}
-    <a href="{% url 'post-create' %}">Create New Post</a>
+
 </div>
+
 </body>
 </html>
+
