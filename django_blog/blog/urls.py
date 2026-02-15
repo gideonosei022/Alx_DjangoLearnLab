@@ -29,6 +29,7 @@ urlpatterns = [
     path('tags/<str:tag_name>/', TagPostListView.as_view(), name='tag-posts'),
 
 
+
 ]
 
 # blog/urls.py
