@@ -1,6 +1,3 @@
-from django.shortcuts import render
-
-# Create your views here.
 from rest_framework import viewsets, generics, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -33,13 +30,14 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class FeedView(generics.ListAPIView):
-    """
-    Returns posts from users the current user follows.
-    """
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        followed_users = user.following.all()
-        return Post.objects.filter(author__in=followed_users)
+        following_users = user.following.all()
+
+        return Post.objects.filter(
+            author__in=following_users
+        ).order_by("-created_at")
+
